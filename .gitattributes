@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+dataBinaries filter=lfs diff=lfs merge=lfs -text
+NNbinaries filter=lfs diff=lfs merge=lfs -text
+TestdataBinaries filter=lfs diff=lfs merge=lfs -text
