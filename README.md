@@ -14,6 +14,6 @@ I use Leaky ReLU as an activation function in the hidden layers and softmax as t
 
 The binary files are all just a collection of 4 byte floats and are organized like this:
 
-    -For the training/testing data binaries, the expected number that the network picks is in position 0, followed by the pixel values of the image, the image is flattened in the same way the mnist csvs are
+   -For the training/testing data binaries, the expected number that the network picks is in position 0, followed by the pixel values of the image, the image is flattened in the same way the mnist csvs are
     
-    -for the weights/biases binaries, this ones are the flattened weight matrix (the way its flattened is vector by vector or up-down first, left-right after) followed by the biases followed by the next weight matrix etc. This process goes from the weights/biases connecting the 0 layer to the 1 layer up to the last in that order.
+   -for the weights/biases binaries, this ones are the flattened weight matrix (the way its flattened is vector by vector or up-down first, left-right after) followed by the biases followed by the next weight matrix etc. This process goes from the weights/biases connecting the 0 layer to the 1 layer up to the last in that order.
