@@ -13,7 +13,9 @@ using namespace std;
 #define TestDataPath "../trainingData/TestdataBinaries"
 
 #define ReLUalpha 0.1
-#define learningRate 0.0005
+#define learningRate 0.001
+
+#define fullSize 109386
 
 extern "C" void* readF(const char* filename, int elemSize, long* nElWriteB);
 extern "C" void writeF(void* d1, int size, int elSize, const char* filepath);
@@ -261,7 +263,7 @@ float* derivationCPUSideLaunch(float* NNdata, float* tData, float* returnData, i
     float* baseDGrad = DeviceGradient;
 
     for(int i = 0; i < totalIterations; i++){
-        gradientCalculator<<<1024, 16>>>(DeviceNND, DevicetD, DeviceRetV, DeviceGradient, Device_wAM, Device_bAM, DeviceLayerV, totalNS, tDatainitiatOffset);
+        gradientCalculator<<<1024, 112>>>(DeviceNND, DevicetD, DeviceRetV, DeviceGradient, Device_wAM, Device_bAM, DeviceLayerV, totalNS, tDatainitiatOffset);
         DevicetD += tDataOffset;
         DeviceRetV += retSize;
         DeviceGradient += totalNS;
@@ -445,7 +447,7 @@ int main(int argc, char** argv){
     trainData = (float*)readF(tdatap, sizeof(float), &nElems);
     testData = (float*)readF(TestDataPath, sizeof(float), &nElems);
     NNdata = (float*)readF(NNdatap, sizeof(float), &nElems);
-    int LayerVals[4] = {784, 16, 16, 10};
+    int LayerVals[4] = {784, 128, 64, 10};
     //NNdata = randomWiehgtHeGeneration(LayerVals, 4);
 
     TrainDataInitialization(testData, 10000, 785, 1, 255);
@@ -458,13 +460,13 @@ int main(int argc, char** argv){
     const float movAvg = 0.9;
     const float decay2 = 0.999;
 
-    float aggregate[13002];
-    for(int i = 0; i < 13002; i++){
+    float aggregate[fullSize];
+    for(int i = 0; i < fullSize; i++){
         aggregate[i] = 0;
     }
     
-    float sqrSum[13002];
-    for(int i = 0; i < 13002; i++){
+    float sqrSum[fullSize];
+    for(int i = 0; i < fullSize; i++){
         sqrSum[i] = 0;
     }
 
@@ -479,7 +481,7 @@ int main(int argc, char** argv){
         float* retD = mlCPUSideLaunch(NNdata, movTrainData, 4, LayerVals, 785, 1, 128);
         float* gradient = derivationCPUSideLaunch(NNdata, movTrainData, retD, LayerVals, 128, 785, 1);
 
-        for(int i = 0; i < 13002; i++){
+        for(int i = 0; i < fullSize; i++){
             aggregate[i] = ((movAvg*aggregate[i]) + ((1.0 - movAvg)*gradient[i]));
             sqrSum[i] = ((decay2*sqrSum[i]) + ((1.0 - decay2)*pow(gradient[i], 2.0)));
             gradient[i] = (aggregate[i]/(1.0-(pow(movAvg, (float)(rott1+1)))))*(1.0/(sqrt(sqrSum[i]/(1.0-(pow(decay2, (float)(rott1+1))))) + 0.000000000001));
@@ -499,17 +501,17 @@ int main(int argc, char** argv){
             printf("cost=%f\naccuracy=%f\n", cost, accC[1]);
             free(accC);
 
-            writeF(NNdata, 13002, sizeof(float), NNdatap);
+            writeF(NNdata, fullSize, sizeof(float), NNdatap);
             printf("epoch\n");
             iterN = 0;
         }
         rott1++;
         if(rott1 >= 50){
             printf("reset\n");
-            for(int i = 0; i < 13002; i++){
+            for(int i = 0; i < fullSize; i++){
                 aggregate[i] = 0;
             }
-            for(int i = 0; i < 13002; i++){
+            for(int i = 0; i < fullSize; i++){
                 sqrSum[i] = 0;
             }
             rott1 = 0;
